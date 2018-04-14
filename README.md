@@ -1,1 +1,1 @@
-"# Tournament_Open" 
+"# Tournament" 
