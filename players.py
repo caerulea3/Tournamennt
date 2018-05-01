@@ -123,7 +123,7 @@ class SinglePlayer():
                                  key=operator.attrgetter('power'), reverse=True)
             if (p.school(), p.seed) in SinglePlayer.topseed:
                 ind=SinglePlayer.topseed.index((p.school(), p.seed))
-                p.power+=5000 if ind==0 else (3000 if ind<3 else 2000)
+                p.power+=5000 if ind==0 else (4000 if ind==1 else (3000 if ind<4 else 2000))
 
     def bye():
         return Person.bye().singleObject
@@ -161,6 +161,9 @@ class SinglePlayer():
     def school(self):
         return self.player.schoolCode
 
+    def schoolname(self):
+        return self.player.schoolName
+
     def isbye(self):
         return self.player.isbye()
 
@@ -192,7 +195,7 @@ class DoublePlayer():
             p.power=max(0, random.randint(500, 600)-p.seed*100)
             if (p.school(), p.seed) in DoublePlayer.topseed:
                 ind=DoublePlayer.topseed.index((p.school(), p.seed))
-                p.power+=5000 if ind==0 else (3000 if ind<3 else 2000)
+                p.power+=5000 if ind==0 else (4000 if ind==1 else (3000 if ind<4 else 2000))
             DoublePlayer.array = sorted(DoublePlayer.array, \
                                  key=operator.attrgetter('power'), reverse=True)
 
@@ -235,7 +238,8 @@ class DoublePlayer():
 
     def school(self):
         return self.player1.schoolCode
-
+    def schoolname(self):
+        return self.player1.schoolName
     def isbye(self):
         return self.player1.isbye()
     

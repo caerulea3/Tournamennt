@@ -117,16 +117,18 @@ class Root(DirtyRoot):
 
         """singles"""
         Match.matchNum=0
-        self.SingleRoot=Match(SinglePlayer)
-        for x in SinglePlayer.array:
-            self.SingleRoot.push(x)
+        if len(SinglePlayer.array)>3:
+            self.SingleRoot=Match(SinglePlayer)
+            for x in SinglePlayer.array:
+                self.SingleRoot.push(x)
 
         """doubles"""
         Match.matchNum=0
-        self.DoubleRoot=Match(DoublePlayer)
-        for x in DoublePlayer.array:
-            self.DoubleRoot.push(x)
-
+        if len(DoublePlayer.array)>3:
+            self.DoubleRoot=Match(DoublePlayer)
+            for x in DoublePlayer.array:
+                self.DoubleRoot.push(x)
+        
+    
     def haveproblem(self):
-        return singleproblem(self.SingleRoot, self) or \
-        doubleproblem(self.DoubleRoot, self)
+        return singleproblem(self.SingleRoot, self), doubleproblem(self.DoubleRoot, self)

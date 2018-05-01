@@ -1,6 +1,7 @@
 from GoogleAPI import google
 import datetime as dt
-from players import Person
+from players import Person, SinglePlayer, DoublePlayer
+import math
 
 def _zigzagMerge(a, b):
     timeForA=True
@@ -65,26 +66,27 @@ def singleproblem(singleroot, root):
     """
     if root.SingleRoot is None:
         return False
+    depth_range=int(math.log(len(SinglePlayer.array), 2))+1
     for g in root.singlematchdic.values():
         """leaf match : check 1)"""
         if g.underMatch==[]:
-            if g.depth()==7: # 258강 경기 배제 
-                print("258 Warning")
+            if g.depth()==depth_range: # 258강 경기 배제 
+                print("Singles::Overdepth Warning")
                 return True
-            if g.depth()==5: # 128강 없는 경기(double-bye)배제
-                print("DoubleBye Warning")
+            if g.depth()==depth_range-2: # 128강 없는 경기(double-bye)배제
+                print("Singles::DoubleBye Warning")
                 return True
             if g.player[0].power>1000 and not g.player[1].isbye(): 
-                print("Top-seed Nonbye Warning")
+                print("Singles::Top-seed Nonbye Warning")
                 #톱시드권자가 bye 못타는 상황 배제
                 return True
             if g.player[0].power<400 and g.player[1].isbye():
-                print("Lower Seed Bye Warning")
+                print("Singles::Lower Seed Bye Warning")
                 # 모 학교 2시드가 bye타는상황 배제
                 return True
         if g.depth()<3:
             if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
-                print("Non-balanced Bye Warning")
+                print("Singles::Non-balanced Bye Warning")
                 #8강경기 이상을 중심으로 하는 박스에서 bye의 갯수 불균등한 경우 배제
                 return True
     return False
@@ -92,24 +94,30 @@ def singleproblem(singleroot, root):
 def doubleproblem(doubleroot, root):
     if root.DoubleRoot is None:
         return False
-    # for g in root.doublematchdic.values():
-    #     """leaf match : check 1)"""
-    #     if g.underMatch==[]:
-    #         if g.depth()==6: # 128강 경기 배제 
-    #             return True
-    #         if g.depth()==4: # 64강 없는 경기(double-bye)배제
-    #             return True
-    #         if g.player[0].power>1000 and not g.player[1].isbye(): 
-    #             #톱시드권자가 bye 못타는 상황 배제
-    #             return True
-    #         if g.player[0].power<400 and g.player[1].isbye():
-    #             #모 학교 2시드가 bye타는상황 배제
-    #             return True
-    #     if g.depth()<3:
-    #         if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
-    #             #8강경기 이상을 중심으로 하는 박스에서 bye의 갯수 불균등한 경우 배제
-    #             return True
-    return False    
+    depth_range=int(math.log(len(DoublePlayer.array), 2))+1
+    for g in root.doublematchdic.values():
+        """leaf match : check 1)"""
+        if g.underMatch==[]:
+            if g.depth()==depth_range: # 2depth_range-28강 경기 배제 
+                print("Doubles::Overdepth Warning")
+                return True
+            if g.depth()==depth_range-2: # 128강 없는 경기(double-bye)배제
+                print("Doubles::DoubleBye Warning")
+                return True
+            if g.player[0].power>1000 and not g.player[1].isbye(): 
+                print("Doubles::Top-seed Nonbye Warning")
+                #톱시드권자가 bye 못타는 상황 배제
+                return True
+            if g.player[0].power<400 and g.player[1].isbye():
+                print("Doubles::Lower Seed Bye Warning")
+                # 모 학교 2시드가 bye타는상황 배제
+                return True
+        if g.depth()<3:
+            if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
+                print("Doubles::Non-balanced Bye Warning")
+                #8강경기 이상을 중심으로 하는 박스에서 bye의 갯수 불균등한 경우 배제
+                return True
+    return False
 
 def _countBye(target):
     udm=target.undermatches()

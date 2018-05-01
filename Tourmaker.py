@@ -32,8 +32,8 @@ while warnings==True:
     rt=Root()
     rt.maketour()
     rt.start()
-    warnings=rt.haveproblem()
-    warnings=False
+    warnings_single, warnings_double=rt.haveproblem()
+    warnings=warnings_single or warnings_double
 
 print("Success!")
 rt.changecourtnum(3)

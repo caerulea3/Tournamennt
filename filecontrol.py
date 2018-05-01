@@ -5,8 +5,8 @@ from players import Person, SinglePlayer, DoublePlayer
 from dirtyfunctions import google_conn, google_singleset, google_update, _countschool, _countseed, _countBye
 from games import Match, Court
 import sys
-NODEHEIGHT=7
-DEBUGHEIGHT=11
+NODEHEIGHT=8
+DEBUGHEIGHT=12
 
 def read_excel(filepath):
     file=xlrd.open_workbook(filepath)
@@ -18,6 +18,7 @@ def read_excel(filepath):
     """Get Metadata"""
     # print(meta.col_values(1))
     useSingles=True if meta.col_values(1)[9]==1 else False
+    useDoubles=True if meta.col_values(1)[10]==1 else False
     if meta.col_values(1)[10]==1:
         useDoubles=True
 
@@ -75,7 +76,7 @@ def read_excel(filepath):
 
         #set Topseed
         DoublePlayer.topseed=[]
-        seedinfo=[singles.col_values(9)[4:11], singles.col_values(10)[4:11]]
+        seedinfo=[doubles.col_values(9)[4:11], doubles.col_values(10)[4:11]]
         for i in range(len(seedinfo[0])):
             for i in range(len(seedinfo[0])):
                 DoublePlayer.topseed.append((seedinfo[0][i], seedinfo[1][i]))
@@ -99,6 +100,7 @@ def write_excel(filepath, singleRoot, doubleRoot, DEBUG=False, width=10):
             [
             "Match #" + str(x.matchNum),
             "{0} vs. {1}".format(x.player[0].name(), x.player[1].name()),
+            "{0} vs. {1}".format(x.player[0].schoolname(), x.player[1].schoolname()),
             "Level : {0}".format(str(2**x.depth()*2)+"강" if x.depth()!=0 else "결승"),
             "score : {0} : {1}".format(x.score[0], x.score[1]),
             "power : {0} : {1}".format(x.player[0].power, x.player[1].power),
@@ -136,6 +138,7 @@ def write_excel(filepath, singleRoot, doubleRoot, DEBUG=False, width=10):
             [
             "Match #" + str(x.matchNum),
             "{0} vs. {1}".format(x.player[0].name(), x.player[1].name()),
+            "{0} vs. {1}".format(x.player[0].schoolname(), x.player[1].schoolname()),
             "Level : {0}".format(str(2**x.depth()*2)+"강" if x.depth()!=0 else "결승"),
             "score : {0} : {1}".format(x.score[0], x.score[1]),
             "power : {0} : {1}".format(x.player[0].power, x.player[1].power),
