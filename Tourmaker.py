@@ -24,7 +24,7 @@ rt=Root()
 
 while warnings==True:
     trial+=1
-    if trial>100:
+    if trial>1000:
         print("Fail To Make Tournament!!")
         break
     print("Try {0:>2d} : ".format(trial), end="")
@@ -35,16 +35,18 @@ while warnings==True:
     warnings_single, warnings_double=rt.haveproblem()
     warnings=warnings_single or warnings_double
 
-print("Success!")
-rt.changecourtnum(3)
 
-"""Write To Files"""
-if filename=="":
-    folder=input("Enter Folder Name(Present Folder if enters none) :")
-    if folder!="" and not os.path.exists("./"+folder):
-        os.makedirs("./"+folder)
-        print("MakeDir Success")
-    path="./" if folder=="" else "./"+folder+"/"
-    filename=input("Enter FileName : ")
-    filename=path + filename
-rt.save(filename)
+if trial<1001:
+    print("Success!")
+    rt.changecourtnum(3)
+
+    """Write To Files"""
+    if filename=="":
+        folder=input("Enter Folder Name(Present Folder if enters none) :")
+        if folder!="" and not os.path.exists("./"+folder):
+            os.makedirs("./"+folder)
+            print("MakeDir Success")
+        path="./" if folder=="" else "./"+folder+"/"
+        filename=input("Enter FileName : ")
+        filename=path + filename
+    rt.save(filename)
