@@ -32,7 +32,7 @@ while warnings==True:
     rt=Root()
     rt.maketour()
     rt.start()
-    warnings_single, warnings_double=rt.haveproblem()
+    warnings_single, warnings_double=rt.haveproblem(trial)
     warnings=warnings_single or warnings_double
 
 

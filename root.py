@@ -130,5 +130,5 @@ class Root(DirtyRoot):
                 self.DoubleRoot.push(x)
         
     
-    def haveproblem(self):
-        return singleproblem(self.SingleRoot, self), doubleproblem(self.DoubleRoot, self)
+    def haveproblem(self, trial):
+        return singleproblem(self.SingleRoot, self, trial), doubleproblem(self.DoubleRoot, self, trial)

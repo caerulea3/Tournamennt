@@ -50,7 +50,7 @@ class WrongActError(Exception):
     def __str__(self):
         return self.msg
 
-def singleproblem(singleroot, root):
+def singleproblem(singleroot, root, trial=0):
     """
     1) 시드권자 8명 (작년 1등/2등/4강진출자 2명/ 8강진출자 4명)
     - AD/ CD/ BD/ CD 이렇게 박스에 분포
@@ -66,23 +66,23 @@ def singleproblem(singleroot, root):
     """
     if root.SingleRoot is None:
         return False
-    depth_range=int(math.log(len(SinglePlayer.array), 2))+1
+    depth_log=math.log(len(SinglePlayer.array), 2)
     for g in root.singlematchdic.values():
         """leaf match : check 1)"""
         if g.underMatch==[]:
-            if g.depth()==depth_range: # 258강 경기 배제 
+            if g.depth()==math.ceil(depth_log): # 258강 경기 배제 
                 print("Singles::Overdepth Warning")
                 return True
-            if g.depth()==depth_range-2: # 128강 없는 경기(double-bye)배제
+            if math.modf(depth_log)[0]>0.5 and g.depth()==int(depth_log)-1: #log의 소수부분>0.5일 때 double-bye 배제
                 print("Singles::DoubleBye Warning")
                 return True
-            if g.player[0].power>1000 and not g.player[1].isbye(): 
+            if math.modf(depth_log)[0]>0.5 and g.player[0].power>1000 and not g.player[1].isbye(): 
                 print("Singles::Top-seed Nonbye Warning")
                 #톱시드권자가 bye 못타는 상황 배제
                 return True
-            if g.player[0].power<400 and g.player[1].isbye():
+            if trial<300 and g.player[0].power<400 and g.player[1].isbye():
                 print("Singles::Lower Seed Bye Warning")
-                # 모 학교 2시드가 bye타는상황 배제
+                # 모 학교 2시드가 bye타는상황 배제, bye수가 참가 학교수보다 많으면 안됩니다.
                 return True
         if g.depth()<3:
             if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
@@ -91,26 +91,26 @@ def singleproblem(singleroot, root):
                 return True
     return False
 
-def doubleproblem(doubleroot, root):
+def doubleproblem(doubleroot, root, trial=0):
     if root.DoubleRoot is None:
         return False
-    depth_range=int(math.log(len(DoublePlayer.array), 2))+1
+    depth_log=math.log(len(DoublePlayer.array), 2)
     for g in root.doublematchdic.values():
         """leaf match : check 1)"""
         if g.underMatch==[]:
-            if g.depth()==depth_range: # 2depth_range-28강 경기 배제 
+            if g.depth()==math.ceil(depth_log): # 258강 경기 배제 
                 print("Doubles::Overdepth Warning")
                 return True
-            if g.depth()==depth_range-2: # 128강 없는 경기(double-bye)배제
+            if math.modf(depth_log)[0]>0.5 and g.depth()==int(depth_log)-1: #log의 소수부분>0.5일 때 double-bye 배제
                 print("Doubles::DoubleBye Warning")
                 return True
-            if g.player[0].power>1000 and not g.player[1].isbye(): 
+            if math.modf(depth_log)[0]>0.5 and g.player[0].power>1000 and not g.player[1].isbye(): 
                 print("Doubles::Top-seed Nonbye Warning")
                 #톱시드권자가 bye 못타는 상황 배제
                 return True
-            if g.player[0].power<400 and g.player[1].isbye():
+            if trial<300 and g.player[0].power<400 and g.player[1].isbye():
                 print("Doubles::Lower Seed Bye Warning")
-                # 모 학교 2시드가 bye타는상황 배제
+                # 모 학교 2시드가 bye타는상황 배제, bye수가 참가 학교수보다 많으면 안됩니다.
                 return True
         if g.depth()<3:
             if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
@@ -290,9 +290,13 @@ class DirtyRoot():
             p.final_time-=dt.timedelta(minutes=1)
 
     def waiting_information(self, match):
-        if match in self.SingleRoot.waitingmatches():
-            return "대기번호 : {0}".format(self.SingleRoot.waitingmatches().index(match))
-        elif match in self.DoubleRoot.waitingmatches():
-            return "대기번호 : {0}".format(self.DoubleRoot.waitingmatches().index(match))
+        waitingArray=self.waitingmatches(self.SingleRoot)
+        singlewaiting=_sortForMS(waitingArray)
+        waitingArray=self.waitingmatches( self.DoubleRoot)
+        doublewaiting=_sortForMS(waitingArray)
+        if match in singlewaiting:
+            return "대기번호 : {0}".format(singlewaiting.index(match)+1)
+        elif match in doublewaiting:
+            return "대기번호 : {0}".format(doublewaiting.index(match)+1)
         else:
             return ""
