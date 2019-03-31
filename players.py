@@ -36,7 +36,6 @@ class Person():
 
     def __init__(self):
         """Metaobject Control"""
-        self.personNum=Person.count
         Person.count+=1
         Person.array.append(self)
 
@@ -119,18 +118,18 @@ class SinglePlayer():
     def reset():
         for p in SinglePlayer.array:
             p.power=max(0, random.randint(500, 600)-p.seed*100)
-            SinglePlayer.array = sorted(SinglePlayer.array, \
-                                 key=operator.attrgetter('power'), reverse=True)
             if (p.school(), p.seed) in SinglePlayer.topseed:
                 ind=SinglePlayer.topseed.index((p.school(), p.seed))
                 p.power+=5000 if ind==0 else (4000 if ind==1 else (3000 if ind<4 else 2000))
-
+        SinglePlayer.array = sorted(SinglePlayer.array, \
+                                key=operator.attrgetter('power'), reverse=True)
+        
     def bye():
         return Person.bye().singleObject
 
     def __init__(self, player, seed=6):
         """Metaobject Control"""
-        self.playerNum=SinglePlayer.count
+        self.playerID=0
         SinglePlayer.count+=1
         SinglePlayer.array.append(self)
 
@@ -157,6 +156,9 @@ class SinglePlayer():
 
     def name(self, form="short", sep=""):
         return self.player.name(form=form)
+    
+    def __str__(self):
+        return "{0} ({1} {2}) {3}".format(self.playerID, self.schoolname(), self.seed, self.name())
 
     def school(self):
         return self.player.schoolCode
@@ -196,15 +198,15 @@ class DoublePlayer():
             if (p.school(), p.seed) in DoublePlayer.topseed:
                 ind=DoublePlayer.topseed.index((p.school(), p.seed))
                 p.power+=5000 if ind==0 else (4000 if ind==1 else (3000 if ind<4 else 2000))
-            DoublePlayer.array = sorted(DoublePlayer.array, \
-                                 key=operator.attrgetter('power'), reverse=True)
+        DoublePlayer.array = sorted(DoublePlayer.array, \
+                                key=operator.attrgetter('power'), reverse=True)
 
     def bye():
         return Person.bye().DoubleObject
 
     def __init__(self, player1, player2, seed=6):
         """Metaobject Control"""
-        self.playerNum=DoublePlayer.count
+        self.playerID=0
         DoublePlayer.count+=1
         DoublePlayer.array.append(self)
 
@@ -235,6 +237,9 @@ class DoublePlayer():
         secondform=form.replace("school", "")
         return "{0}{1}{2}".format(self.player1.name(form=form), \
                                   sep, self.player2.name(form=secondform))
+
+    def __str__(self):
+        return "{0} ({1} {2}) {3}".format(self.playerID, self.schoolname(), self.seed, self.name())
 
     def school(self):
         return self.player1.schoolCode

@@ -39,7 +39,25 @@ class Root(DirtyRoot):
 
 
     """Match Functions"""
-    def start(self):
+    def _start_single(self):
+        #set PlayerID
+        queue = [self.SingleRoot]
+        playerCnt = 1
+        while len(queue) != 0:
+            this = queue.pop()
+            if this is None:
+                break
+            elif this.underMatch==[]:
+                if not this.player[0].isbye():
+                    this.player[0].playerID = playerCnt
+                    playerCnt+=1
+                if not this.player[1].isbye():
+                    this.player[1].playerID = playerCnt
+                    playerCnt+=1
+            else:
+                queue.insert(0, this.underMatch[0])
+                queue.insert(0, this.underMatch[1])
+
         #Refine Matches With Bye
         if self.SingleRoot is not None:
             singleMatches=self.SingleRoot.undermatches()
@@ -47,6 +65,37 @@ class Root(DirtyRoot):
                 if m.player[1].isbye() and m.editable():
                     m.result(6, 0)
                     m.endmatch()
+        
+        if not self.singlematchdic.keys() and self.SingleRoot is not None:
+            for g in self.SingleRoot.undermatches():
+                self.singlematchdic[g.matchNum]=g
+        
+        #Make MatchSequence
+        if self.SingleRoot is not None:
+            self.SingleSequence=makeseq(self.SingleRoot)
+        
+    def _start_double(self):
+        #set PlayerID
+        queue = [self.DoubleRoot]
+        playerCnt = 1
+        while len(queue) != 0:
+            this = queue.pop()
+            if this is None:
+                break
+            if len(this.underMatch)==0:
+                if not this.player[0].isbye():
+                    this.player[0].playerID = playerCnt
+                    playerCnt+=1
+                if not this.player[1].isbye():
+                    this.player[1].playerID = playerCnt
+                    playerCnt+=1
+            else:
+                if this.underMatch[0] is not None:
+                    queue.insert(0, this.underMatch[0])
+                if this.underMatch[1] is not None:
+                    queue.insert(0, this.underMatch[1])
+
+        #Refine Matches With Bye
         if self.DoubleRoot is not None:
             doubleMatches=self.DoubleRoot.undermatches()
             for m in doubleMatches:
@@ -54,40 +103,42 @@ class Root(DirtyRoot):
                     m.result(6, 0)
                     m.endmatch()
 
-        if not self.singlematchdic.keys() and self.SingleRoot is not None:
-            for g in self.SingleRoot.undermatches():
-                self.singlematchdic[g.matchNum]=g
-
         if not self.doublematchdic.keys() and self.DoubleRoot is not None:
             for g in self.DoubleRoot.undermatches():
                 self.doublematchdic[g.matchNum]=g
 
         #Make MatchSequence
-        if self.SingleRoot is not None:
-            self.SingleSequence=makeseq(self.SingleRoot)
         if self.DoubleRoot is not None:
             self.DoubleSequence = makeseq(self.DoubleRoot)
 
-
-
+    def start(self):
+        self._start_single()
+        self._start_double()
 
     """Control Functions"""
-    def save(self, filepath):
+    def save(self, filepath, option="whole"):
         path=filepath
         if "." in filepath[-5:]:
             path=filepath[filepath.index(".")-1:]
 
-        filecontrol.write_excel(path+".xlsx", self.SingleRoot, self.DoubleRoot)
+        if option=='slim':
+            filecontrol.write_excel_slim(path+".xlsx", self.SingleRoot, self.DoubleRoot)
+        elif option=='both':
+            filecontrol.write_excel(path+".xlsx", self.SingleRoot, self.DoubleRoot)
+            filecontrol.write_excel_slim(path+"_slim.xlsx", self.SingleRoot, self.DoubleRoot)
+        else:
+            filecontrol.write_excel(path+".xlsx", self.SingleRoot, self.DoubleRoot)
         filecontrol.write_pickle(path+".tr", self)
+
 
     def load(self, filepath):
         filecontrol.read_pickle(filepath, self)
-
+    """
     def googlesave(self, spreadsheetId):
         if self.SingleRoot is not None:
             filecontrol.google_writeall(spreadsheetId, self.SingleRoot, "Singles", self)
         if self.DoubleRoot is not None:
-            filecontrol.google_writeall(spreadsheetId, self.DoubleRoot, "Doubles", self)
+            filecontrol.google_writeall(spreadsheetId, self.DoubleRoot, "Doubles", self)"""
 
     def changecourtnum(self, newcourtnum):
         while len(self.Courts)!=newcourtnum:
@@ -110,10 +161,10 @@ class Root(DirtyRoot):
             p.final_time=dt.datetime.now()
 
     """Tour Making Functions"""
-    def maketour(self):
+    def maketour_single(self):
         """Reset and Initializing"""
         SinglePlayer.reset()
-        DoublePlayer.reset()
+        self.singlematchdic={}
 
         """singles"""
         Match.matchNum=0
@@ -122,13 +173,20 @@ class Root(DirtyRoot):
             for x in SinglePlayer.array:
                 self.SingleRoot.push(x)
 
+    def maketour_double(self):
+        """Reset and Initializing"""
+        DoublePlayer.reset()
+        self.doublematchdic={}
+
         """doubles"""
         Match.matchNum=0
         if len(DoublePlayer.array)>3:
             self.DoubleRoot=Match(DoublePlayer)
             for x in DoublePlayer.array:
                 self.DoubleRoot.push(x)
-        
     
-    def haveproblem(self, trial):
-        return singleproblem(self.SingleRoot, self, trial), doubleproblem(self.DoubleRoot, self, trial)
+    def haveproblem_single(self, err_count=0):
+        return singleproblem(self.SingleRoot, self, err_count)
+    
+    def haveproblem_double(self, err_count=0):
+        return doubleproblem(self.DoubleRoot, self, err_count)

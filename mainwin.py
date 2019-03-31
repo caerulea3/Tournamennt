@@ -14,6 +14,7 @@ form_class = uic.loadUiType("./ui10/UI_MainWindow.ui")[0]
 class MainWindow(QMainWindow, form_class):
     def __init__(self, root=None):
         super().__init__()
+        self.autosavestack=0
         self.setupUi(self)
         self.root=Root() if root is None else root
         self.root.setmainwin(self)
@@ -40,6 +41,13 @@ class MainWindow(QMainWindow, form_class):
 
         self.changefocus()
         self.updateallui()
+    
+    def autosave(self):
+        if self.autosavestack==20:
+            self.root.save("./temp")
+            print("Autosave")
+        else:
+            self.autosavestack+=1
 
     def saveFile(self):
         dia=QFileDialog()
@@ -147,9 +155,12 @@ class MainWindow(QMainWindow, form_class):
             "Google Docs URL")
 
         if ok:
-            self.URL=url
-            self.spreadSheetId=self.URL.split("/")[5]
-            self.root.googlesave(self.spreadSheetId)
+            try:
+                self.URL=url
+                self.spreadSheetId=self.URL.split("/")[5]
+                self.root.googlesave(self.spreadSheetId)
+            except:
+                print("Error at Googlesave")
 
     def updateallui(self):
         self.root.start()
@@ -166,9 +177,11 @@ class MainWindow(QMainWindow, form_class):
         self.update_waitingtable()
 
     def test(self):
-        self.root._shifttime()
-        self.updateallui()
-
+        dia=QFileDialog()
+        filepath = dia.getSaveFileName(self)[0]
+        if filepath!="":
+            self.root.save(filepath, option="slim")
+            
     def tourdraw(self, target):
         if target is None:
             return
@@ -227,6 +240,7 @@ class MainWindow(QMainWindow, form_class):
             self.courtbuttons.append(thisCourt)
             thisCourt.move(self.courtGrid, i%2, i//2)
             thisCourt.setlabel()
+        self.autosave()
 
     def update_waitingtable(self):
         self.singlewaiting.clear()
@@ -252,6 +266,8 @@ class MainWindow(QMainWindow, form_class):
                 for j in range(5):
                     self.doublewaiting.setItem(waitingArray.index(s), j, \
                         QTableWidgetItem(s[j]))
+
+        self.autosave()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

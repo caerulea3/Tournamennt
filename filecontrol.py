@@ -2,7 +2,8 @@ import xlrd         #for read_excel
 import xlsxwriter   #for write_excel
 import pickle
 from players import Person, SinglePlayer, DoublePlayer
-from dirtyfunctions import google_conn, google_singleset, google_update, _countschool, _countseed, _countBye
+# from dirtyfunctions import google_conn, google_singleset, google_update, _countschool, _countseed, _countBye
+from dirtyfunctions import _countschool, _countseed, _countBye
 from games import Match, Court
 import sys
 NODEHEIGHT=8
@@ -50,7 +51,7 @@ def read_excel(filepath):
                 seed=int(thisrow[2]))
         #set Topseed
         SinglePlayer.topseed=[]
-        seedinfo=[singles.col_values(9)[4:11], singles.col_values(10)[4:11]]
+        seedinfo=[singles.col_values(9)[4:12], singles.col_values(10)[4:12]]
         for i in range(len(seedinfo[0])):
             SinglePlayer.topseed.append((seedinfo[0][i], seedinfo[1][i]))
 
@@ -76,7 +77,7 @@ def read_excel(filepath):
 
         #set Topseed
         DoublePlayer.topseed=[]
-        seedinfo=[doubles.col_values(9)[4:11], doubles.col_values(10)[4:11]]
+        seedinfo=[doubles.col_values(9)[4:12], doubles.col_values(10)[4:12]]
         for i in range(len(seedinfo[0])):
             for i in range(len(seedinfo[0])):
                 DoublePlayer.topseed.append((seedinfo[0][i], seedinfo[1][i]))
@@ -93,7 +94,8 @@ def write_excel(filepath, singleRoot, doubleRoot, DEBUG=False, width=10):
     if singleRoot is not None:
         count=1
         nodeHeight=NODEHEIGHT if not DEBUG else DEBUGHEIGHT
-        ask=input("DEBUG?:")
+        if __name__=="__main__":
+            ask=input("DEBUG?:")
         singleGames=singleRoot.undermatches()
         for x in singleGames:
             thingsToWrite=\
@@ -122,7 +124,7 @@ def write_excel(filepath, singleRoot, doubleRoot, DEBUG=False, width=10):
                 singles.set_column(1, count, width)
 
             #debug_0327
-            if ask=='DEBUG':
+            if __name__=="__main__" and ask=='DEBUG':
                 singles.write(startHeight+4, count, x.player[0].power)
                 singles.write(startHeight+4, count+1, x.player[1].power)
 
@@ -154,6 +156,49 @@ def write_excel(filepath, singleRoot, doubleRoot, DEBUG=False, width=10):
                 doubles.write(startHeight+i, count, thingsToWrite[i])
                 doubles.set_column(1, count, width)
             count+=1
+
+    workbook.close()
+
+def write_excel_slim(filepath, singleRoot, doubleRoot):
+    workbook = xlsxwriter.Workbook(filepath)
+    singles = workbook.add_worksheet("Singles")
+    doubles = workbook.add_worksheet("Doubles")
+
+    """Singles"""
+    if singleRoot is not None:
+        count=1
+        maxdepth = 9
+        singleGames=singleRoot.undermatches()
+        
+        for x in singleGames:
+            thingsToWrite=" Match #" + str(x.matchNum) +"|" + str(x.player[0]) + "vs." + str(x.player[1])
+            
+            if x.underMatch==[]:
+                singles.write(count, maxdepth - x.depth()-1, str(x.player[0]))
+                singles.write(count+1, maxdepth-x.depth(), thingsToWrite)
+                singles.write(count+2, maxdepth - x.depth()-1, str(x.player[1]))
+                count+=3
+            else:
+                singles.write(count, maxdepth-x.depth(), thingsToWrite)
+                count+=1
+
+
+    if doubleRoot is not None:
+        count=1
+        maxdepth = 9
+        doubleGames=doubleRoot.undermatches()
+        
+        for x in doubleGames:
+            thingsToWrite=" Match #" + str(x.matchNum) +"|" + str(x.player[0]) + "vs." + str(x.player[1])
+            
+            if x.underMatch==[]:
+                doubles.write(count, maxdepth - x.depth()-1, str(x.player[0]))
+                doubles.write(count+1, maxdepth-x.depth(), thingsToWrite)
+                doubles.write(count+2, maxdepth - x.depth()-1, str(x.player[1]))
+                count+=3
+            else:
+                doubles.write(count, maxdepth-x.depth(), thingsToWrite)
+                count+=1
 
     workbook.close()
 
@@ -200,7 +245,7 @@ def read_pickle(filepath, root=None):
             root.Courts=metadata['Courts']
         except KeyError:
             pass
-
+"""
 def google_writeall(spreadSheetId, rootMatch, sheetname, root=None):
     googleconn=google_conn(spreadSheetId)
 
@@ -209,6 +254,8 @@ def google_writeall(spreadSheetId, rootMatch, sheetname, root=None):
     games=rootMatch.undermatches()
     for i in range(len(games)):
         x=games[i]
-        google_singleset(googleconn, i, x, sheetname=sheetname, waiting_info="" if root is None else root.waiting_information(x))
+        google_singleset(googleconn, i, x, sheetname=sheetname, waiting_info="")
+        # google_singleset(googleconn, i, x, sheetname=sheetname, waiting_info="" if root is None else root.waiting_information(x))
 
     google_update(googleconn)
+"""

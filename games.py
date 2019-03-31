@@ -18,6 +18,7 @@ class Match():
 
         push(self, newplayer), result(self, score1, score2, tiescore1=0, tiescore2=0)
         findschool(self, target), _pushcondition(self, newplayer, direction)
+        match_going(self)
     """
     matchNum=0
     array=[]
@@ -94,9 +95,6 @@ class Match():
             self.upperMatch.player[self.upperMatch.underMatch.index(self)]\
             =self.winner()
         
-        
-
-
     def underplayers(self):
         if self.underMatch==[]:
             return self.player
@@ -188,7 +186,6 @@ class Match():
 
     def players_ready(self):
         return not (self.player[0].on_play() or self.player[1].on_play())
-
 
 class Court():
     """
