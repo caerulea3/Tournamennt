@@ -1,4 +1,6 @@
-from GoogleAPI import google
+# from GoogleAPI import google
+"""google series at dirtyfunctions & Filecondtrol. 
+Notice that google programs requires bunch of pacakges to installed"""
 import datetime as dt
 from players import Person, SinglePlayer, DoublePlayer
 import math
@@ -59,34 +61,40 @@ def singleproblem(singleroot, root, trial=0):
     - 같은 학교가 최대한 나중에 만날 수 있도록
     3) 시드순서 
     - A-D시드와 임의로 선정된 1시드가 128강에서 Bye를 탐
+    -- Bye 갯수가 학교 수보다 많은 경우 (당연하지만) 2시드도 바이를 탈 수 있음
     - 1시드는 초반에 4,5시드와 경기하도록 매칭돼있음 (높은 시드는 낮은 시드를 만나도록 배정)
-    - 박스별로 각 시드숫자 선수 명수도 비교적 균등하게 분포
+    - 박스별로 각 시드숫자 선수 명수도 비교적 균등하게 분포()
     4) Bye 분포
     - 각 box/ sub-box 별로 bye 개수 균등 분배
     """
     if root.SingleRoot is None:
         return False
     depth_log=math.log(len(SinglePlayer.array), 2)
+    expectedByenum = round(2**math.ceil(depth_log)) - len(SinglePlayer.array)
+    second_seed_bye_required = True if expectedByenum > len(Person.schoolDic) - 5 else False
+    if trial == 0:
+        print("\nSingles ErrorCheck Setting Information\n Expected Byes : {0}\nSchools Count = {1}\n".format(expectedByenum, len(Person.schoolDic)))
+        input()
     for g in root.singlematchdic.values():
         """leaf match : check 1)"""
         if g.underMatch==[]:
             if g.depth()==math.ceil(depth_log): # 258강 경기 배제 
                 print("Singles::Overdepth Warning")
                 return True
-            if math.modf(depth_log)[0]>0.5 and g.depth()==int(depth_log)-1: #log의 소수부분>0.5일 때 double-bye 배제
+            if math.modf(depth_log)[0]>0.7 and g.depth()==int(depth_log)-1: #log의 소수부분>0.5일 때 double-bye 배제
                 print("Singles::DoubleBye Warning")
                 return True
-            if math.modf(depth_log)[0]>0.5 and g.player[0].power>1000 and not g.player[1].isbye(): 
+            if math.modf(depth_log)[0]>0.7 and g.player[0].power>1000 and not g.player[1].isbye(): 
                 print("Singles::Top-seed Nonbye Warning")
                 #톱시드권자가 bye 못타는 상황 배제
                 return True
-            if trial<300 and g.player[0].power<400 and g.player[1].isbye():
+            if g.player[0].power<(300 if second_seed_bye_required else 400) and g.player[1].isbye():
                 print("Singles::Lower Seed Bye Warning")
                 # 모 학교 2시드가 bye타는상황 배제, bye수가 참가 학교수보다 많으면 안됩니다.
                 return True
         if g.depth()<3:
-            if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
-                print("Singles::Non-balanced Bye Warning")
+            if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>2:
+                print("Singles::Non-balanced Bye Warning at depth {2}- {0} : {1}".format(abs(_countBye(g.underMatch[0])), _countBye(g.underMatch[1]), g.depth()))
                 #8강경기 이상을 중심으로 하는 박스에서 bye의 갯수 불균등한 경우 배제
                 return True
     return False
@@ -95,26 +103,31 @@ def doubleproblem(doubleroot, root, trial=0):
     if root.DoubleRoot is None:
         return False
     depth_log=math.log(len(DoublePlayer.array), 2)
+    expectedByenum = round(2**math.ceil(depth_log)) - len(DoublePlayer.array)
+    second_seed_bye_required = True if expectedByenum > len(Person.schoolDic) - 5 else False
+    if trial == 0:
+        print("\nDoubles ErrorCheck Setting Information\n Expected Byes : {0}\nSchools Count = {1}\n".format(expectedByenum, len(Person.schoolDic)))
+        input
     for g in root.doublematchdic.values():
         """leaf match : check 1)"""
         if g.underMatch==[]:
             if g.depth()==math.ceil(depth_log): # 258강 경기 배제 
                 print("Doubles::Overdepth Warning")
                 return True
-            if math.modf(depth_log)[0]>0.5 and g.depth()==int(depth_log)-1: #log의 소수부분>0.5일 때 double-bye 배제
+            if math.modf(depth_log)[0]>0.7 and g.depth()==int(depth_log)-1: #log의 소수부분>0.5일 때 double-bye 배제
                 print("Doubles::DoubleBye Warning")
                 return True
-            if math.modf(depth_log)[0]>0.5 and g.player[0].power>1000 and not g.player[1].isbye(): 
+            if math.modf(depth_log)[0]>0.7 and g.player[0].power>1000 and not g.player[1].isbye(): 
                 print("Doubles::Top-seed Nonbye Warning")
                 #톱시드권자가 bye 못타는 상황 배제
                 return True
-            if trial<300 and g.player[0].power<400 and g.player[1].isbye():
+            if g.player[0].power<(300 if second_seed_bye_required else 400) and g.player[1].isbye():
                 print("Doubles::Lower Seed Bye Warning")
                 # 모 학교 2시드가 bye타는상황 배제, bye수가 참가 학교수보다 많으면 안됩니다.
                 return True
         if g.depth()<3:
-            if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>1:
-                print("Doubles::Non-balanced Bye Warning")
+            if abs(_countBye(g.underMatch[0])-_countBye(g.underMatch[1]))>2:
+                print("Doubles::Non-balanced Bye Warning at depth {2}- {0} : {1}".format(abs(_countBye(g.underMatch[0])), _countBye(g.underMatch[1]), g.depth()))
                 #8강경기 이상을 중심으로 하는 박스에서 bye의 갯수 불균등한 경우 배제
                 return True
     return False
@@ -159,7 +172,7 @@ def _countseed(target):
     for sd in seeds.keys():
         s+="{0} : {1} / ".format(sd, seeds[sd])
     return s
-
+"""
 def google_conn(spreadSheetId):
     googleconn=google(auth="rw")
     googleconn.get_credentials()
@@ -205,6 +218,7 @@ def google_singleset(googleconn, matchindex, x, sheetname, waiting_info=""):
 
 def google_update(googleconn):
     googleconn.updateData()
+"""
 
 
 def match_general_info(target):
@@ -274,10 +288,10 @@ class DirtyRoot():
             target.score=[0, 0]
             if target.upperMatch.underMatch[0]==target:
                 target.upperMatch.player[0]=\
-                target.upperMatch.playerType("#" + str(target.matchNum) + "Winner", 0)
+                target.upperMatch.playerType.dummy("#" + str(target.matchNum) + "Winner")
             else:
                 target.upperMatch.player[1]=\
-                target.upperMatch.playerType("#" + str(target.matchNum) + "Winner", 0)
+                target.upperMatch.playerType.dummy("#" + str(target.matchNum) + "Winner")
 
             if target.upperMatch.finished==True:
                 resetLog=self._unLockMatchRec(target.upperMatch)
